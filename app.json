@@ -15,7 +15,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.sirajpreena311.Oshaapp"
     },
     "web": {
       "bundler": "metro",
@@ -36,6 +37,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "e414bba5-7d21-4ed8-a237-ecf39b366932"
+      }
     }
   }
 }
