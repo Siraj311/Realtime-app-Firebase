@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { database } from '../config/firebaseConfig';
 import { ref, onValue } from 'firebase/database';
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Alert} from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -10,9 +10,15 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 // Define types for your data and coordinates
 interface SensorData {
   key: string;
-  radiation?: number;
-  latitude?: number;
-  longitude?: number;
+  radiation?: string;
+  latitude?: string;
+  longitude?: string;
+}
+
+interface SaveData {
+  radiation: string;
+  latitude: string;
+  longitude: string;
 }
 
 interface Coordinates {
@@ -48,6 +54,7 @@ export default function Index() {
           key, // Use the key as the unique identifier
           ...value[key],
         }));
+
         const dataCoordinates: Coordinates[] = Object.keys(value)
           .map((key) => {
             const item = value[key];
@@ -105,7 +112,28 @@ export default function Index() {
   }
 
   const handleSave = () => {
-    setSavedData(JSON.stringify(data));
+    if(keys.length == 0) {
+      const newData : SaveData[] = data.map((item) => ({radiation: item.radiation ?? "", latitude: item.latitude ?? "", longitude: item.longitude ?? ""}))
+      const keyArray: string[] = data.map((item) => item.key);
+      setKeys(keyArray);
+      setSavedData(JSON.stringify(newData));
+      Alert.alert("Data Saved !");
+      return;
+    }
+
+    const newData: SaveData[] = data
+                    .filter((item) => !keys.includes(item.key))
+                    .map((item) => ({radiation: item.radiation ?? "", latitude: item.latitude ?? "", longitude: item.longitude ?? ""}));
+
+    if(newData.length == 0) {
+      Alert.alert("There is no new Data to be Saved !");
+      return;
+    }
+
+    const newKeys : string[] = data.map((item) => item.key)
+    setKeys(newKeys)
+    setSavedData(JSON.stringify(newData))
+    Alert.alert("Data Saved !");
   };
 
   const handleHistory = () => {

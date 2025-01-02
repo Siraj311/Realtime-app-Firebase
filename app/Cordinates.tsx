@@ -42,6 +42,67 @@ const Cordinates: React.FC = () => {
     return [headers, ...rows].join("\n");
   };
 
+  // const handleDownload = async (): Promise<void> => {
+  //   setLoading(true);
+  //   try {
+  //     const newData = data.map((item) => {
+  //       if (item.radiation.includes("Error") || item.latitude.includes("Error") || item.longitude.includes("Error")) {
+  //         return null;
+  //       }
+
+  //       return item;
+  //     }).filter((item) => item !== null);
+
+  //     if (newData.length === 0) {
+  //       Alert.alert("No Valid Data", "There are no valid data to export.");
+  //       return;
+  //     }
+  
+  //     const csvData = convertToCSV(newData);
+  //     const fileName = "data.csv";
+  //     const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+  
+  //     console.log("Writing file to:", fileUri);
+  //     await FileSystem.writeAsStringAsync(fileUri, csvData, {
+  //       encoding: FileSystem.EncodingType.UTF8,
+  //     });
+  
+  //     const fileInfo = await FileSystem.getInfoAsync(fileUri);
+  //     console.log("File Info:", fileInfo);
+  
+  //     if (!fileInfo.exists) {
+  //       throw new Error("File does not exist at the given URI.");
+  //     }
+  
+  //     const { status } = await MediaLibrary.requestPermissionsAsync();
+  //     console.log("Permission Status:", status);
+  
+  //     if (status !== "granted") {
+  //       throw new Error("Media library permission not granted.");
+  //     }
+  
+  //     console.log("Creating asset...");
+  //     const asset = await MediaLibrary.createAssetAsync(fileUri);
+  //     console.log("Asset Created:", asset);
+  
+  //     const album = await MediaLibrary.getAlbumAsync("Download");
+  //     console.log("Album Info:", album);
+  
+  //     if (album) {
+  //       await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+  //     } else {
+  //       await MediaLibrary.createAlbumAsync("Download", asset, false);
+  //     }
+  
+  //     Alert.alert("Success", "File downloaded successfully to the Downloads folder.");
+  //   } catch (error: any) {
+  //     console.error("Error during download:", error);
+  //     Alert.alert("Error", `Could not save file: ${error.message}`);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleDownload = async (): Promise<void> => {
     setLoading(true);
     try {
@@ -49,80 +110,27 @@ const Cordinates: React.FC = () => {
         Alert.alert("No Data", "There are no coordinates to export.");
         return;
       }
-  
+
       const csvData = convertToCSV(data);
-      const fileName = "data.csv";
-      const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
-  
-      console.log("Writing file to:", fileUri);
+      const fileUri = `${FileSystem.documentDirectory}data.csv`;
+
+      // Write CSV data to a file
       await FileSystem.writeAsStringAsync(fileUri, csvData, {
         encoding: FileSystem.EncodingType.UTF8,
       });
-  
-      const fileInfo = await FileSystem.getInfoAsync(fileUri);
-      console.log("File Info:", fileInfo);
-  
-      if (!fileInfo.exists) {
-        throw new Error("File does not exist at the given URI.");
-      }
-  
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      console.log("Permission Status:", status);
-  
-      if (status !== "granted") {
-        throw new Error("Media library permission not granted.");
-      }
-  
-      console.log("Creating asset...");
-      const asset = await MediaLibrary.createAssetAsync(fileUri);
-      console.log("Asset Created:", asset);
-  
-      const album = await MediaLibrary.getAlbumAsync("Download");
-      console.log("Album Info:", album);
-  
-      if (album) {
-        await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+
+      // Share the file if sharing is available
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri);
       } else {
-        await MediaLibrary.createAlbumAsync("Download", asset, false);
+        Alert.alert("Sharing not available", "This feature is not supported on your device.");
       }
-  
-      Alert.alert("Success", "File downloaded successfully to the Downloads folder.");
-    } catch (error: any) {
-      console.error("Error during download:", error);
-      Alert.alert("Error", `Could not save file: ${error.message}`);
+    } catch (error) {
+      console.error("Error creating file:", error);
     } finally {
       setLoading(false);
     }
   };
-
-  // const handleDownload = async (): Promise<void> => {
-  //   setLoading(true);
-  //   try {
-  //     if (data.length === 0) {
-  //       Alert.alert("No Data", "There are no coordinates to export.");
-  //       return;
-  //     }
-
-  //     const csvData = convertToCSV(data);
-  //     const fileUri = `${FileSystem.documentDirectory}data.csv`;
-
-  //     // Write CSV data to a file
-  //     await FileSystem.writeAsStringAsync(fileUri, csvData, {
-  //       encoding: FileSystem.EncodingType.UTF8,
-  //     });
-
-  //     // Share the file if sharing is available
-  //     if (await Sharing.isAvailableAsync()) {
-  //       await Sharing.shareAsync(fileUri);
-  //     } else {
-  //       Alert.alert("Sharing not available", "This feature is not supported on your device.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error creating file:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   return (
     <View style={styles.container}>
@@ -131,7 +139,7 @@ const Cordinates: React.FC = () => {
           <View style={styles.downloadButtonContainer}>
             <TouchableOpacity style={styles.button} onPress={handleDownload} disabled={loading}>
               <Text style={styles.buttonText}>
-                {loading ? "Processing..." : "Download as CSV"}
+                {loading ? "Processing..." : "Share as CSV"}
               </Text>
             </TouchableOpacity>
           </View>
