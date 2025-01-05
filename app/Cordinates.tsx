@@ -106,12 +106,24 @@ const Cordinates: React.FC = () => {
   const handleDownload = async (): Promise<void> => {
     setLoading(true);
     try {
-      if (data.length === 0) {
-        Alert.alert("No Data", "There are no coordinates to export.");
+      const newData = data.map((item) => {
+        if (item.radiation.includes("Error") || item.latitude.includes("Error") || item.longitude.includes("Error")) {
+          return null;
+        }
+
+        return {
+          radiation: item.radiation.split(" ")[0],
+          latitude: item.latitude,
+          longitude: item.longitude
+        };
+      }).filter((item) => item !== null);
+
+      if (newData.length === 0) {
+        Alert.alert("No Valid Data", "There are no valid data to export.");
         return;
       }
 
-      const csvData = convertToCSV(data);
+      const csvData = convertToCSV(newData);
       const fileUri = `${FileSystem.documentDirectory}data.csv`;
 
       // Write CSV data to a file
