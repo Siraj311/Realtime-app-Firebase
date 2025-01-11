@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Osha-app",
-    "slug": "Osha-app",
+    "name": "Radiation app",
+    "slug": "Radiation-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
